@@ -1,4 +1,4 @@
-# threadump extractor go script
+# thread dump extractor go script
 
 ## Purpose
 Strip thread dumps that were taken using kill -3 from a log file
