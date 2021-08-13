@@ -52,10 +52,10 @@ func main() {
 	scanForLines(flags.LogFileVar, flags)
 }
 
-func scanForLines(path string, flags helpers.Flags) (int, error) {
+func scanForLines(path string, flags helpers.Flags) error {
 	f, err := os.Open(path)
 	if err != nil {
-		return 0, err
+		log.Panic("couldn't open file:", path, err)
 	}
 	defer f.Close()
 
@@ -79,21 +79,28 @@ func scanForLines(path string, flags helpers.Flags) (int, error) {
 			//begin file buffer
 			fo, err = os.Create(flags.TdFilePrefixVar + "-" + strconv.Itoa(fileCount))
 			if err != nil {
-				panic(err)
+				log.Panic("couldn't open file for writing:", flags.TdFilePrefixVar+"-"+strconv.Itoa(fileCount), err)
 			}
 			datawriter = bufio.NewWriter(fo)
-			_, _ = datawriter.WriteString(prevline + "\n")
+			_, err = datawriter.WriteString(prevline + "\n")
+			if err != nil {
+				log.Warn("Couldn't write ", prevline, " to file:", err)
+			}
 		}
 		if write {
-			_, _ = datawriter.WriteString(scanner.Text() + "\n")
 			//stream line into file
+			_, err = datawriter.WriteString(scanner.Text() + "\n")
+			if err != nil {
+				log.Warn("Couldn't write ", scanner.Text(), " to file:", err)
+			}
 		}
 		if strings.Contains(scanner.Text(), flags.TdEndStringVar) {
+			//end file buffer
 			log.Info("End line found:", lineNum, ",", scanner.Text())
 			datawriter.Flush()
 			fo.Close()
 			write = false
-			//end file buffer
+
 		}
 		prevline = line
 		lineNum++
@@ -102,7 +109,8 @@ func scanForLines(path string, flags helpers.Flags) (int, error) {
 
 	if err := scanner.Err(); err != nil {
 		// Handle the error
-		return 0, err
+		log.Warn(err)
+		return err
 	}
-	return 0, err
+	return err
 }

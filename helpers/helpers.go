@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"runtime"
-	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -31,30 +30,6 @@ func Trace() TraceData {
 	trace.Line = line
 	trace.Fn = fn.Name()
 	return trace
-}
-
-//ByteCountDecimal convert bytes to human readable data size
-func ByteCountDecimal(b int64) string {
-	const unit = 1000
-	if b < unit {
-		return fmt.Sprintf("%d B", b)
-	}
-	div, exp := int64(unit), 0
-	for n := b / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f%cB", float64(b)/float64(div), "kMGTPE"[exp])
-}
-
-//StringToInt64 self explanatory
-func StringToInt64(data string) int64 {
-	convert, err := strconv.ParseInt(data, 10, 64)
-	if err != nil {
-		log.Warn(data, " is not of type integer")
-		return 0
-	}
-	return convert
 }
 
 //SetLogger sets logger settings
